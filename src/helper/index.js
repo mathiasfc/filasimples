@@ -17,8 +17,10 @@ const rnd = (min, max) => {
   aleatoriosUtilizados = aleatoriosUtilizados + 1;
   min = Math.ceil(min);
   max = Math.floor(max);
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+  return ((max - min) * Math.random() + min).toFixed(4);
 };
+
+const estadosDaFila = [];
 
 let config = {};
 //Id para controle de eventos
@@ -70,52 +72,102 @@ const proximoPasso = () => {
   }
 };
 
-export const agendaSaida = tempo => {
-  console.log("agendou uma saída");
-  listaDeEventos.push({ id, tipo: "SAIDA", tempo });
-  id = id + 1;
-};
-
-export const agendaChegada = (
-  tempo,
-  iniciaExecucao = false,
-  configuracaoInicial
-) => {
-  console.log("agendou uma chegada");
-  listaDeEventos.push({ id, tipo: "CHEGADA", tempo });
-  id = id + 1;
+export const montaTabelaDeDados = (iniciaExecucao, configuracaoInicial) => {
+  for (let i = 0; i <= configuracaoInicial.capacidadeDaFila; i++) {
+    estadosDaFila.push({
+      estado: i,
+      tempo: 0
+    });
+  }
 
   if (iniciaExecucao) {
     config = configuracaoInicial;
     proximoPasso();
   }
+  estadosDaFila.forEach(e => {
+    console.log("------------------");
+    console.log(`Estado: ${e.estado}`);
+    console.log(`Tempo: ${e.tempo.toFixed(4)}`);
+    console.log(
+      `Probabilidade: ${((e.tempo / tempoGlobal) * 100).toFixed(2)}%`
+    );
+  });
+  console.log("------------------");
+
+  console.log(`Tempo Global: ${tempoGlobal.toFixed(4)}`);
+  console.log(
+    `Tempo Total dos Estados: ${estadosDaFila
+      .map(ev => ev.tempo)
+      .reduce((a, b) => a + b)
+      .toFixed(4)}`
+  );
+  console.log(`Número de Perdas: ${PERDAS}`);
+  console.log("");
+  console.log("Simulação finalizada");
+  console.log("###### PARA UMA NOVA SIMULAÇÃO CLIQUE EM RESET ######");
+};
+
+export const agendaSaida = tempo => {
+  // console.log("Agendou uma saída");
+  listaDeEventos.push({ id, tipo: "SAIDA", tempo });
+  id = id + 1;
+};
+
+export const agendaChegada = tempo => {
+  // console.log("Agendou uma chegada");
+  listaDeEventos.push({ id, tipo: "CHEGADA", tempo });
+  id = id + 1;
+};
+
+const contabilizaTempoNoEstado = (nrDeClientesNaFila, tempo) => {
+  let index = estadosDaFila.findIndex(e => e.estado === nrDeClientesNaFila);
+  let estadoCorrente = estadosDaFila[index];
+  estadosDaFila[index] = {
+    ...estadoCorrente,
+    tempo: estadoCorrente.tempo + tempo
+  };
 };
 
 export const chegada = (tempoAtual, tempoAnterior) => {
-  tempoGlobal = tempoAtual - tempoAnterior;
+  const deltaT = tempoAtual - tempoAnterior;
+  tempoGlobal = tempoGlobal + deltaT;
+
+  contabilizaTempoNoEstado(FILA, deltaT);
+
   //armazena tempo do evento corrente para ser usado no próximo como anterior
-  tempoAnterior = tempoAtual;
+  tempoDoUltimoEvento = tempoAtual;
 
   if (FILA < config.capacidadeDaFila) {
     FILA = FILA + 1;
     if (FILA <= config.servidores) {
-      agendaSaida(tempoGlobal + rnd(config.saidaMin, config.saidaMax));
+      const tempoSorteioSaida = parseFloat(
+        rnd(config.saidaMin, config.saidaMax)
+      );
+      agendaSaida(tempoGlobal + tempoSorteioSaida);
     }
   } else {
     PERDAS = PERDAS + 1;
   }
-  agendaChegada(tempoGlobal + rnd(config.chegadaMin, config.chegadaMax));
+  const tempoSorteioChegada = parseFloat(
+    rnd(config.chegadaMin, config.chegadaMax)
+  );
+  agendaChegada(tempoGlobal + tempoSorteioChegada);
   proximoPasso();
 };
 
 const saida = (tempoAtual, tempoAnterior) => {
-  tempoGlobal = tempoAtual - tempoAnterior;
+  const deltaT = tempoAtual - tempoAnterior;
+  tempoGlobal = tempoGlobal + deltaT;
+
+  contabilizaTempoNoEstado(FILA, deltaT);
+
   //armazena tempo do evento corrente para ser usado no próximo como anterior
-  tempoAnterior = tempoAtual;
+  tempoDoUltimoEvento = tempoAtual;
 
   FILA = FILA - 1;
   if (FILA >= config.servidores) {
-    agendaSaida(tempoGlobal + rnd(config.saidaMin, config.saidaMax));
+    const tempoSorteioSaida = parseFloat(rnd(config.saidaMin, config.saidaMax));
+    agendaSaida(tempoGlobal + tempoSorteioSaida);
   }
   proximoPasso();
 };

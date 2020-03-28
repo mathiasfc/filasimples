@@ -1,32 +1,35 @@
 import React, { useEffect, useState } from "react";
 import Terminal from "terminal-in-react";
-import { agendaChegada } from "./helper";
+import { montaTabelaDeDados, agendaChegada } from "./helper";
 import "./App.css";
 
 function App() {
   useEffect(() => {
     console.log("Informe os parâmetros de entrada.");
     console.log("Clique em iniciar para começar a simulação.");
-    console.log("Obs: limite de 1000 número aleatórios");
+    console.log("Obs: limite de 1000 números aleatórios");
   }, []);
 
-  const [chegadaMin, setChegadaMin] = useState(2);
-  const [chegadaMax, setChegadaMax] = useState(4);
+  const [chegadaMin, setChegadaMin] = useState(1);
+  const [chegadaMax, setChegadaMax] = useState(2);
 
   const [saidaMin, setSaidaMin] = useState(3);
-  const [saidaMax, setSaidaMax] = useState(5);
+  const [saidaMax, setSaidaMax] = useState(6);
 
   const [servidores, setServidores] = useState(1);
 
-  const [capacidadeDaFila, setCapacidadeDaFila] = useState(5);
+  const [capacidadeDaFila, setCapacidadeDaFila] = useState(3);
 
-  const [chegadaInicial, setChegadaInicial] = useState(3);
+  const [chegadaInicial, setChegadaInicial] = useState(2);
 
-  const [nrAleatorios, setNrAleatorios] = useState(1000);
+  const [nrAleatorios, setNrAleatorios] = useState(8);
+
+  const [btnDisabled, setBtnDisabled] = useState(false);
 
   let terminalRef = null;
 
   const iniciaSimulacao = () => {
+    setBtnDisabled(true);
     terminalRef.runCommandOnActive("clear");
     const configuracaoInicial = {
       chegadaMin,
@@ -37,7 +40,8 @@ function App() {
       capacidadeDaFila,
       nrAleatorios
     };
-    agendaChegada(chegadaInicial, true, configuracaoInicial);
+    agendaChegada(chegadaInicial);
+    montaTabelaDeDados(true, configuracaoInicial);
   };
 
   const resetaSimulacao = () => {
@@ -136,17 +140,13 @@ function App() {
         </p>
         <p>
           <button
-            className="button"
-            style={{ backgroundColor: "#7ee892" }}
+            className="button green"
             onClick={() => iniciaSimulacao()}
+            disabled={btnDisabled}
           >
             Simular
           </button>
-          <button
-            className="button"
-            style={{ backgroundColor: "#e87e7e" }}
-            onClick={() => resetaSimulacao()}
-          >
+          <button className="button red" onClick={() => resetaSimulacao()}>
             Reset
           </button>
         </p>
@@ -159,6 +159,7 @@ function App() {
         color="white"
         prompt="white"
         allowTabs={false}
+        style={{ fontSize: "22px" }}
         ref={terminal => {
           terminalRef = terminal;
         }}

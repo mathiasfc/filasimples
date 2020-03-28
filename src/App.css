@@ -28,3 +28,16 @@
   font-weight: bold;
   cursor: pointer;
 }
+
+.green {
+  background-color: #7ee892;
+}
+
+.red {
+  background-color: #e87e7e;
+}
+
+.button:disabled {
+  background-color: #efefef;
+  cursor: not-allowed;
+}
