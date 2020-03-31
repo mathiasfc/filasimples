@@ -6,8 +6,7 @@ import "./App.css";
 function App() {
   useEffect(() => {
     console.log("Informe os parâmetros de entrada.");
-    console.log("Clique em iniciar para começar a simulação.");
-    console.log("Obs: limite de 1000 números aleatórios");
+    console.log("Clique em Simular para começar a simulação.");
   }, []);
 
   const [chegadaMin, setChegadaMin] = useState(1);

@@ -12,6 +12,14 @@ export const createRand = seed => {
 };
 
 let aleatoriosUtilizados = 0;
+let t0;
+let t1;
+
+const milliTomin = millis => {
+  const min = Math.floor(millis / 60000);
+  const sec = ((millis % 60000) / 1000).toFixed(0);
+  return min + ":" + (sec < 10 ? "0" : "") + sec;
+};
 
 const rnd = (min, max) => {
   aleatoriosUtilizados = aleatoriosUtilizados + 1;
@@ -51,39 +59,7 @@ const removeEventoDoEscalonador = evento => {
   listaDeEventos.splice(index, 1);
 };
 
-//Executa o próximo passo de acordo com o escalonador
-const proximoPasso = () => {
-  //condição para finalizar a execução
-  if (aleatoriosUtilizados >= config.nrAleatorios) {
-    return;
-  }
-
-  let evento = listaDeEventos.reduce(function(res, obj) {
-    return obj.tempo < res.tempo ? obj : res;
-  });
-
-  removeEventoDoEscalonador(evento);
-
-  console.log(`(${evento.id}) - ${evento.tipo} / Tempo: ${evento.tempo}`);
-  if (evento.tipo === "CHEGADA") {
-    chegada(evento.tempo, tempoDoUltimoEvento);
-  } else if (evento.tipo === "SAIDA") {
-    saida(evento.tempo, tempoDoUltimoEvento);
-  }
-};
-
-export const montaTabelaDeDados = (iniciaExecucao, configuracaoInicial) => {
-  for (let i = 0; i <= configuracaoInicial.capacidadeDaFila; i++) {
-    estadosDaFila.push({
-      estado: i,
-      tempo: 0
-    });
-  }
-
-  if (iniciaExecucao) {
-    config = configuracaoInicial;
-    proximoPasso();
-  }
+const resultados = () => {
   estadosDaFila.forEach(e => {
     console.log("------------------");
     console.log(`Estado: ${e.estado}`);
@@ -105,6 +81,46 @@ export const montaTabelaDeDados = (iniciaExecucao, configuracaoInicial) => {
   console.log("");
   console.log("Simulação finalizada");
   console.log("###### PARA UMA NOVA SIMULAÇÃO CLIQUE EM RESET ######");
+  t1 = performance.now();
+  console.log(`Tempo de Execução ${milliTomin(t1 - t0)}`);
+};
+
+//Executa o próximo passo de acordo com o escalonador
+const proximoPasso = async () => {
+  //condição para finalizar a execução
+  if (aleatoriosUtilizados >= config.nrAleatorios) {
+    resultados();
+    return;
+  }
+
+  let evento = listaDeEventos.reduce(function(res, obj) {
+    return obj.tempo < res.tempo ? obj : res;
+  });
+
+  removeEventoDoEscalonador(evento);
+
+  // console.log(`(${evento.id}) - ${evento.tipo} / Tempo: ${evento.tempo}`);
+  if (evento.tipo === "CHEGADA") {
+    chegada(evento.tempo, tempoDoUltimoEvento);
+  } else if (evento.tipo === "SAIDA") {
+    saida(evento.tempo, tempoDoUltimoEvento);
+  }
+};
+
+export const montaTabelaDeDados = (iniciaExecucao, configuracaoInicial) => {
+  console.log("Executando...");
+  t0 = performance.now();
+  for (let i = 0; i <= configuracaoInicial.capacidadeDaFila; i++) {
+    estadosDaFila.push({
+      estado: i,
+      tempo: 0
+    });
+  }
+
+  if (iniciaExecucao) {
+    config = configuracaoInicial;
+    proximoPasso();
+  }
 };
 
 export const agendaSaida = tempo => {
@@ -152,7 +168,7 @@ export const chegada = (tempoAtual, tempoAnterior) => {
     rnd(config.chegadaMin, config.chegadaMax)
   );
   agendaChegada(tempoGlobal + tempoSorteioChegada);
-  proximoPasso();
+  setImmediate(proximoPasso);
 };
 
 const saida = (tempoAtual, tempoAnterior) => {
@@ -169,5 +185,6 @@ const saida = (tempoAtual, tempoAnterior) => {
     const tempoSorteioSaida = parseFloat(rnd(config.saidaMin, config.saidaMax));
     agendaSaida(tempoGlobal + tempoSorteioSaida);
   }
-  proximoPasso();
+
+  setImmediate(proximoPasso);
 };
