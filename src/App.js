@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Terminal from "terminal-in-react";
 import { montaTabelaDeDados, agendaChegada } from "./helper";
 import "./App.css";
+import Fila from "./components/Fila";
 
 function App() {
   useEffect(() => {
@@ -9,17 +10,8 @@ function App() {
     console.log("Clique em Simular para começar a simulação.");
   }, []);
 
-  const [chegadaMin, setChegadaMin] = useState(1);
-  const [chegadaMax, setChegadaMax] = useState(2);
-
-  const [saidaMin, setSaidaMin] = useState(3);
-  const [saidaMax, setSaidaMax] = useState(6);
-
-  const [servidores, setServidores] = useState(1);
-
-  const [capacidadeDaFila, setCapacidadeDaFila] = useState(3);
-
-  const [chegadaInicial, setChegadaInicial] = useState(2);
+  const [configFila1, setConfigFila1] = useState({});
+  const [configFila2, setConfigFila2] = useState({});
 
   const [nrAleatorios, setNrAleatorios] = useState(8);
 
@@ -31,15 +23,12 @@ function App() {
     setBtnDisabled(true);
     terminalRef.runCommandOnActive("clear");
     const configuracaoInicial = {
-      chegadaMin,
-      chegadaMax,
-      saidaMin,
-      saidaMax,
-      servidores,
-      capacidadeDaFila,
-      nrAleatorios
+      configFila1,
+      configFila2,
+      nrAleatorios,
     };
-    agendaChegada(chegadaInicial);
+
+    agendaChegada(configFila1.chegadaInicial);
     montaTabelaDeDados(true, configuracaoInicial);
   };
 
@@ -50,81 +39,28 @@ function App() {
   return (
     <div className="App">
       <div className="Parameters">
-        <p>
-          <span>Intervalo de Chegada: </span>
-          <input
-            type="number"
-            className="NumberInput"
-            min="0"
-            max="30"
-            value={chegadaMin}
-            onChange={e => setChegadaMin(e.target.value)}
-          />
-          a
-          <input
-            type="number"
-            className="NumberInput"
-            min="0"
-            max="30"
-            value={chegadaMax}
-            onChange={e => setChegadaMax(e.target.value)}
-          />
-        </p>
-        <p>
-          <span>Intervalo de Saída: </span>
-          <input
-            type="number"
-            className="NumberInput"
-            min="0"
-            max="30"
-            value={saidaMin}
-            onChange={e => setSaidaMin(e.target.value)}
-          />
-          a
-          <input
-            type="number"
-            className="NumberInput"
-            min="0"
-            max="30"
-            value={saidaMax}
-            onChange={e => setSaidaMax(e.target.value)}
-          />
-        </p>
-        <p>
-          <span>Número de servidores: </span>
-          <input
-            type="number"
-            className="NumberInput"
-            min="0"
-            max="30"
-            value={servidores}
-            onChange={e => setServidores(e.target.value)}
-          />
-        </p>
-        <p>
-          <span>Capacidade da fila: </span>
-          <input
-            type="number"
-            className="NumberInput"
-            min="0"
-            max="30"
-            value={capacidadeDaFila}
-            onChange={e => setCapacidadeDaFila(e.target.value)}
-          />
-        </p>
-
-        <p>
-          <span>Chegada Inicial: </span>
-          <input
-            type="number"
-            className="NumberInput"
-            min="0"
-            max="30"
-            value={chegadaInicial}
-            onChange={e => setChegadaInicial(e.target.value)}
-          />
-        </p>
-
+        <Fila
+          number="1"
+          chegada1={2}
+          chegada2={3}
+          saida1={2}
+          saida2={5}
+          servers={2}
+          capacidade={3}
+          chegada={2.5}
+          setConfigFila={setConfigFila1}
+          initial
+        />
+        <hr className="divider" />
+        <Fila
+          number="2"
+          saida1={3}
+          saida2={5}
+          servers={1}
+          capacidade={3}
+          setConfigFila={setConfigFila2}
+        />
+        <hr className="divider" />
         <p>
           <span>Aleatórios utilizados: </span>
           <input
@@ -133,7 +69,7 @@ function App() {
             min="0"
             max="1000"
             value={nrAleatorios}
-            onChange={e => setNrAleatorios(e.target.value)}
+            onChange={(e) => setNrAleatorios(e.target.value)}
             style={{ width: "80px" }}
           />
         </p>
@@ -159,11 +95,11 @@ function App() {
         prompt="white"
         allowTabs={false}
         style={{ fontSize: "22px" }}
-        ref={terminal => {
+        ref={(terminal) => {
           terminalRef = terminal;
         }}
         commands={{
-          "open-google": () => window.open("https://www.google.com/", "_blank")
+          "open-google": () => window.open("https://www.google.com/", "_blank"),
         }}
       />
     </div>

@@ -12,6 +12,12 @@
   align-items: flex-start;
   width: 420px;
   padding: 10px;
+  height: auto;
+}
+
+.divider {
+  border: 1px solid gray;
+  width: 100%;
 }
 
 .NumberInput {
